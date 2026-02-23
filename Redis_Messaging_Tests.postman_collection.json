@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "Redis Messaging Tests",
+    "description": "Collection để test Redis pub/sub messaging trong Spring Boot",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Login (Get Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.result && jsonData.result.token) {",
+              "    pm.collectionVariables.set(\"token\", jsonData.result.token);",
+              "    pm.collectionVariables.set(\"tokenExpiry\", jsonData.result.expiryTime);",
+              "    console.log(\"Token saved successfully\");",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "token"]
+        },
+        "description": "Login để lấy JWT token. Token sẽ tự động lưu vào collection variable."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Publish Text Message",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/plain",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "Hello from Postman! This is a test message."
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/messages/publish-text",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "messages", "publish-text"]
+        },
+        "description": "Gửi text message đơn giản qua Redis"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Publish JSON Message - Notification",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"content\": \"User registration successful\",\n    \"sender\": \"UserService\",\n    \"type\": \"notification\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/messages/publish",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "messages", "publish"]
+        },
+        "description": "Gửi notification message dạng JSON object"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Publish JSON Message - Welcome",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"content\": \"Welcome to our platform!\",\n    \"sender\": \"System\",\n    \"type\": \"welcome\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/messages/publish",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "messages", "publish"]
+        },
+        "description": "Gửi welcome message cho user mới"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Publish JSON Message - Security Alert",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"content\": \"Suspicious login detected from new IP address\",\n    \"sender\": \"SecurityService\",\n    \"type\": \"security_alert\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/messages/publish",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "messages", "publish"]
+        },
+        "description": "Gửi security alert message"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Publish JSON Message - System Maintenance",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"content\": \"System maintenance scheduled at 2:00 AM. Please save your work.\",\n    \"sender\": \"AdminPanel\",\n    \"type\": \"maintenance\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/messages/publish",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "messages", "publish"]
+        },
+        "description": "Gửi system maintenance notification"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenExpiry",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
