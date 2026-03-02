@@ -32,7 +32,8 @@ public class SecurityConfig {
         "/auth/introspect", 
         "/auth/logout", 
         "/auth/refresh",
-        "/api/messages/**"  
+        "/api/messages/**",
+        "/fix/admin-role"
     };
 
     @Autowired
@@ -42,6 +43,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(request -> request
                 .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers(HttpMethod.GET, "/products", "/products/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/categories", "/categories/**").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui.html",
