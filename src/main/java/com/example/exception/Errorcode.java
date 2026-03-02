@@ -25,7 +25,9 @@ public enum Errorcode {
     INSUFFICIENT_STOCK(2004, "Insufficient stock", HttpStatus.BAD_REQUEST),
     CART_EMPTY(2005, "Cart is empty", HttpStatus.BAD_REQUEST),
     ORDER_CANNOT_CANCEL(2006, "Order cannot be cancelled", HttpStatus.BAD_REQUEST),
-    CATEGORY_NOT_FOUND(2007, "Category not found", HttpStatus.NOT_FOUND);
+    CATEGORY_NOT_FOUND(2007, "Category not found", HttpStatus.NOT_FOUND),
+    PAYMENT_CREATE_FAILED(2008, "Failed to create payment", HttpStatus.BAD_GATEWAY),
+    PAYMENT_NOT_FOUND(2009, "Payment not found", HttpStatus.NOT_FOUND);
 
     private int code;
     private String message;

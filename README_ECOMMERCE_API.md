@@ -335,7 +335,50 @@ Authorization: Bearer <admin_token>
 
 ---
 
-## 5. Test Flow Example
+## 5. Payment (MoMo)
+
+Thanh toán qua Ví MoMo: chuyển hướng sang trang MoMo hoặc hiển thị QR để khách quét.
+
+### Tạo link/QR thanh toán MoMo
+```bash
+POST /payments/orders/{orderId}/momo
+Authorization: Bearer <customer_token>
+```
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "payUrl": "https://test-payment.momo.vn/v2/gateway/pay?t=...",
+    "qrCodeUrl": "00020101021226110007vn.momo...",
+    "deeplink": "momo://app?action=payWithApp&...",
+    "orderId": "order-uuid",
+    "amountVnd": 2249970
+  }
+}
+```
+
+- **payUrl**: Mở trong trình duyệt để thanh toán trên web MoMo.
+- **qrCodeUrl**: Chuỗi dữ liệu QR — dùng thư viện (vd: `qrcode` npm, ZXing) để tạo ảnh QR, khách mở app MoMo quét.
+- **deeplink**: Mở trực tiếp app MoMo (mobile).
+
+**Lưu ý:** Đơn hàng phải ở trạng thái `PENDING`. Số tiền tính theo VND (1.000–50.000.000 VND). Sau khi thanh toán thành công trên MoMo, MoMo gọi IPN về server và đơn tự chuyển sang `COMPLETED`.
+
+### Cấu hình MoMo (application-dev.properties)
+Khai báo thông tin merchant từ [MoMo For Business](https://business.momo.vn/):
+```properties
+momo.partner-code=<PartnerCode>
+momo.access-key=<AccessKey>
+momo.secret-key=<SecretKey>
+momo.base-url=https://test-payment.momo.vn
+momo.redirect-url=http://localhost:3000/payment/return
+momo.ipn-url=http://localhost:8080/payments/ipn
+```
+
+---
+
+## 6. Test Flow Example
 
 ### Complete Purchase Flow:
 
@@ -381,6 +424,12 @@ Authorization: Bearer <admin_token>
    PUT /orders/{id}/status?status=COMPLETED (admin token)
    ```
 
+9. **Customer thanh toán bằng MoMo (sau khi checkout)**
+   ```bash
+   POST /payments/orders/{orderId}/momo (customer token)
+   # Trả về payUrl, qrCodeUrl, deeplink — redirect user hoặc hiển thị QR
+   ```
+
 ---
 
 ## Error Codes
@@ -395,6 +444,8 @@ Authorization: Bearer <admin_token>
 | 2004 | Insufficient stock | Not enough product in stock |
 | 2005 | Cart is empty | Cannot checkout empty cart |
 | 2006 | Order cannot be cancelled | Order already completed/cancelled |
+| 2008 | Payment create failed | MoMo API error or amount out of range |
+| 2009 | Payment not found | Payment doesn't exist |
 
 ---
 
@@ -419,3 +470,4 @@ http://localhost:8080/swagger-ui.html
 - Stock is automatically reduced on checkout
 - Stock is restored if order is cancelled
 - Cart is cleared after successful checkout
+- Payment: cấu hình `momo.partner-code`, `momo.access-key`, `momo.secret-key` để dùng MoMo; IPN `/payments/ipn` phải public để MoMo gọi về

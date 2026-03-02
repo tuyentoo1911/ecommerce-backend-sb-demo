@@ -3,6 +3,7 @@ package com.example.Service;
 import org.springframework.stereotype.Service;
 import com.example.javaspringboot.repository.*;
 import com.example.javaspringboot.entity.*;
+import com.example.dto.request.CartItemRequest;
 import com.example.dto.response.OrderResponse;
 import com.example.dto.response.OrderItemResponse;
 import com.example.enums.OrderStatus;
@@ -34,6 +35,44 @@ public class OrderService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(Errorcode.USER_NOT_FOUND));
+    }
+
+    /**
+     * Order thẳng luôn: mua ngay 1 sản phẩm, không qua giỏ hàng.
+     */
+    @Transactional
+    public OrderResponse buyNow(CartItemRequest request) {
+        User user = getCurrentUser();
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new AppException(Errorcode.PRODUCT_NOT_FOUND));
+
+        if (product.getStock() < request.getQuantity()) {
+            throw new AppException(Errorcode.INSUFFICIENT_STOCK);
+        }
+
+        Order order = Order.builder()
+                .id(UUID.randomUUID().toString())
+                .user(user)
+                .status(OrderStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        product.setStock(product.getStock() - request.getQuantity());
+        productRepository.save(product);
+
+        OrderItem orderItem = OrderItem.builder()
+                .id(UUID.randomUUID().toString())
+                .order(order)
+                .product(product)
+                .quantity(request.getQuantity())
+                .priceAtPurchase(product.getPrice())
+                .build();
+
+        BigDecimal total = product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
+        order.setTotalPrice(total);
+        order.setItems(List.of(orderItem));
+
+        return toOrderResponse(orderRepository.save(order));
     }
 
     @Transactional

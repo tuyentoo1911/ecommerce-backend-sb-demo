@@ -45,6 +45,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                 .requestMatchers(HttpMethod.GET, "/products", "/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/categories", "/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/payments/vnpay/ipn").permitAll()
+                .requestMatchers(HttpMethod.GET, "/payments/vnpay/return").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui.html",
